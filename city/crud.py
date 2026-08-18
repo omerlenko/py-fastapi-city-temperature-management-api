@@ -18,3 +18,13 @@ async def create_city(db: AsyncSession, data: schemas.CityCreate) -> models.City
     await db.commit()
     await db.refresh(city)
     return city
+
+async def update_city(db: AsyncSession, city: models.City, data: schemas.CityUpdate) -> models.City:
+    for key, value in data.model_dump(exclude_unset=True).items():
+        setattr(city, key, value)
+    await db.commit()
+    return city
+
+async def delete_city(db: AsyncSession, city: models.City) -> None:
+    await db.delete(city)
+    await db.commit()
