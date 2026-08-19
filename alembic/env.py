@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 import city.models
-#import temperature.models
+import temperature.models
 
 from config import settings
 from database import Base
