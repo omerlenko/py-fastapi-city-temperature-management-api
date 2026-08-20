@@ -16,8 +16,10 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     finally:
         await db.close()
 
+
 def get_http_client(request: Request) -> httpx.AsyncClient:
     return request.app.state.http_client
+
 
 DbDep = Annotated[AsyncSession, Depends(get_db)]
 ClientDep = Annotated[httpx.AsyncClient, Depends(get_http_client)]

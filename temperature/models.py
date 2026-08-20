@@ -22,7 +22,6 @@ class Temperature(Base):
 
     city: Mapped[City] = relationship(back_populates="temperatures")
 
-
     __table_args__ = (
         UniqueConstraint("city_id", "date_time", name="uq_city_date_time"),
     )

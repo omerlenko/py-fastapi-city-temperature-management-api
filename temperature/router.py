@@ -24,7 +24,12 @@ async def update_temperatures(db: DbDep, client: ClientDep):
         "failed": 0,
     }
 
-    tasks = [fetch_temperature_data(city=city, api_url=API_URL, api_key=API_KEY, client=client) for city in cities]
+    tasks = [
+        fetch_temperature_data(
+            city=city, api_url=API_URL, api_key=API_KEY, client=client
+        )
+        for city in cities
+    ]
     results = await asyncio.gather(*tasks, return_exceptions=True)
     for city, extracted_data in zip(cities, results):
         if isinstance(extracted_data, Exception):
@@ -33,7 +38,9 @@ async def update_temperatures(db: DbDep, client: ClientDep):
             continue
 
         valid_data = schemas.TemperatureCreate(city_id=city.id, **extracted_data)
-        temperature = await temperature_crud.get_temperature_by_city_and_time(db=db, city_id=valid_data.city_id, date_time=valid_data.date_time)
+        temperature = await temperature_crud.get_temperature_by_city_and_time(
+            db=db, city_id=valid_data.city_id, date_time=valid_data.date_time
+        )
         if temperature is None:
             temperature_crud.add_temperature(db=db, data=valid_data)
             log["created"] += 1
@@ -43,8 +50,15 @@ async def update_temperatures(db: DbDep, client: ClientDep):
     await db.commit()
     return log
 
+
 @router.get("/temperatures/", response_model=list[schemas.TemperatureRead])
-async def get_temperatures(db: DbDep, city_id: int | None = None, skip: int = 0, limit: int = 10):
+async def get_temperatures(
+    db: DbDep, city_id: int | None = None, skip: int = 0, limit: int = 10
+):
     if city_id is not None and await city_crud.get_city(db=db, city_id=city_id) is None:
-        raise HTTPException(status_code=404, detail="This city does not exist in the database")
-    return await temperature_crud.get_temperatures(db=db, city_id=city_id, skip=skip, limit=limit)
+        raise HTTPException(
+            status_code=404, detail="This city does not exist in the database"
+        )
+    return await temperature_crud.get_temperatures(
+        db=db, city_id=city_id, skip=skip, limit=limit
+    )
