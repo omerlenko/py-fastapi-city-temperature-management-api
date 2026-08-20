@@ -2,14 +2,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from city import schemas, crud, models
-from dependencies import get_db
+from dependencies import DbDep
 
 
 router = APIRouter()
-DbDep = Annotated[AsyncSession, Depends(get_db)]
 
 async def get_city_or_404(db: DbDep, city_id: int) -> models.City:
     city = await crud.get_city(db=db, city_id=city_id)
