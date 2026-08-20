@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter
 
 from config import settings
@@ -19,13 +21,22 @@ async def update_temperatures(db: DbDep, client: ClientDep):
         "created": 0,
         "ignored": 0,
     }
-    for city in cities:
-        extracted_data = await fetch_temperature_data(city=city, api_url=API_URL, api_key=API_KEY, client=client)
-        temperature_data = schemas.TemperatureCreate(city_id=city.id, **extracted_data)
-        res = await temperature_crud.create_temperature(db=db, data=temperature_data)
-        if res is not None:
+    tasks = []
+
+    async with asyncio.TaskGroup() as tg:
+        for city in cities:
+            task = tg.create_task(fetch_temperature_data(city=city, api_url=API_URL, api_key=API_KEY, client=client))
+            tasks.append((city, task))
+
+    for city, task in tasks:
+        extracted_data = task.result()
+        valid_data = schemas.TemperatureCreate(city_id=city.id, **extracted_data)
+        temperature = await temperature_crud.get_temperature_by_city_and_time(db=db, city_id=valid_data.city_id, date_time=valid_data.date_time)
+        if temperature is None:
+            temperature_crud.add_temperature(db=db, data=valid_data)
             log["created"] += 1
         else:
             log["ignored"] += 1
 
+    await db.commit()
     return log
