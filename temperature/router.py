@@ -1,6 +1,6 @@
 import asyncio
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from config import settings
 from dependencies import DbDep, ClientDep
@@ -40,3 +40,9 @@ async def update_temperatures(db: DbDep, client: ClientDep):
 
     await db.commit()
     return log
+
+@router.get("/temperatures/", response_model=list[schemas.TemperatureRead])
+async def get_temperatures(db: DbDep, city_id: int | None = None, skip: int = 0, limit: int = 10):
+    if city_id is not None and await city_crud.get_city(db=db, city_id=city_id) is None:
+        raise HTTPException(status_code=404, detail="This city does not exist in the database")
+    return await temperature_crud.get_temperatures(db=db, city_id=city_id, skip=skip, limit=limit)
