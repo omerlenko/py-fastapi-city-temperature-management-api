@@ -34,7 +34,7 @@ async def create_city(db: AsyncSession, data: schemas.CityCreate) -> models.City
 async def update_city(
     db: AsyncSession, city: models.City, data: schemas.CityUpdate
 ) -> models.City:
-    for key, value in data.model_dump(exclude_unset=True).items():
+    for key, value in data.model_dump(exclude_unset=True, exclude_none=True).items():
         setattr(city, key, value)
     try:
         await db.commit()
