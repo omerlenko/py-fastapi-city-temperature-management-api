@@ -5,8 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from city import schemas, models
 
 
-async def get_cities(db: AsyncSession, skip: int = 0, limit: int = 10) -> list[models.City]:
-    stmt = select(models.City).order_by(models.City.id).offset(skip).limit(limit)
+async def get_cities(db: AsyncSession, skip: int = 0, limit: int | None = None) -> list[models.City]:
+    stmt = select(models.City).order_by(models.City.id).offset(skip)
+    if limit is not None:
+        stmt = stmt.limit(limit)
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
