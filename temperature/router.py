@@ -42,7 +42,7 @@ async def update_temperatures(db: DbDep, client: ClientDep):
             db=db, city_id=valid_data.city_id, date_time=valid_data.date_time
         )
         if temperature is None:
-            temperature_crud.add_temperature(db=db, data=valid_data)
+            await temperature_crud.add_temperature(db=db, data=valid_data)
             log["created"] += 1
         else:
             log["ignored"] += 1

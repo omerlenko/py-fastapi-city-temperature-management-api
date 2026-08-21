@@ -19,9 +19,12 @@ async def get_temperature_by_city_and_time(
     return temperature
 
 
-def add_temperature(db: AsyncSession, data: schemas.TemperatureCreate) -> Temperature:
+async def add_temperature(
+    db: AsyncSession, data: schemas.TemperatureCreate
+) -> Temperature:
     temperature = Temperature(**data.model_dump())
     db.add(temperature)
+    await db.flush()
     return temperature
 
 
